@@ -143,9 +143,7 @@ void loop() {
   Serial.println(active_power_output*0.01); // il valore del registro è in unità da 0,01 KWatt
   delay(MODBUS_DELAY); 
       
-  uint16_t total_production_hb = SofarSolarReadHoldingRegister(1,TOTAL_PRODUCTION_HB); // leggo i primi 16 bit
-  uint16_t total_production_lb = SofarSolarReadHoldingRegister(1,TOTAL_PRODUCTION_LB); // leggo i secondi 16 bit
-  uint32_t total_production = total_production_hb << 16 | total_production_lb; // Compongo il dato a 32 bit
+  uint32_t total_production = SofarSolarReadHoldingRegister32(1,TOTAL_PRODUCTION_HB); // specifico l'indirizzo del primo registro 
   Serial.print("Device 1 total_production kWh = ");
   Serial.println(total_production); // il registro è in unità da 1 kWh
   delay(MODBUS_DELAY); 
@@ -182,6 +180,7 @@ void loop() {
 
 }
 
+// Lettura registro singolo da 16 bit
 uint16_t SofarSolarReadHoldingRegister(int id,int address){
   
   if (!ModbusRTUClient.requestFrom(id, HOLDING_REGISTERS, address, 1)) { 
@@ -192,6 +191,24 @@ uint16_t SofarSolarReadHoldingRegister(int id,int address){
     return 0xFFFF; //Restituisco il valore massimo per segnalare l'errore di lettura
   }else{
     return ModbusRTUClient.read();
+  }
+  
+}
+
+// Lettura registro doppio da 32 bit
+uint32_t SofarSolarReadHoldingRegister32(int id,int address){
+  
+  if (!ModbusRTUClient.requestFrom(id, HOLDING_REGISTERS, address, 2)) { 
+    Serial.print("Errore lettura address: ");
+    Serial.print(address);
+    Serial.print(" ");
+    Serial.println(ModbusRTUClient.lastError());
+    return 0xFFFF; //Restituisco il valore massimo per segnalare l'errore di lettura
+  }else{
+    uint16_t hb = ModbusRTUClient.read();
+    uint16_t lb = ModbusRTUClient.read();
+    uint32_t doubleReg = hb << 16 | lb;
+    return doubleReg;
   }
   
 }
