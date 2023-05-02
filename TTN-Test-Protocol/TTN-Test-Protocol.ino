@@ -37,13 +37,13 @@ OTHER DEALINGS IN THE SOFTWARE. */
    Tabella per la decodifica dei parametri di trasmissione
 
    DataRate  	SF 	BandWidth 	bit/s
-	    0      	12 	   125 	     250
-	    1   	 	11 	   125       440
-	    2 	  	10 	   125 	     980
-	    3 	     9 	   125 	   1.760
-	    4 	 	   8 	   125 	   3.125
-	    5 	  	 7 	   125 	   5.470
-	    6 	 	   7 	   250 	  11.000
+       0        12         125           250
+       1        11         125           440
+       2        10         125           980
+       3         9         125         1.760
+       4         8         125         3.125
+       5         7         125         5.470
+       6         7         250        11.000
 
 */
 int tabellaDataRate[][3] = {12,125,250,
