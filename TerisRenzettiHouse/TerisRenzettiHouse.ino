@@ -27,6 +27,8 @@
 
 // Configurazione dell'impianto su ModBus
 // Modificare con i corretti indirizzi ModBus
+// e con il valore del BAUDRATE
+#define RS485_BAUDRATE 9600
 #define EASTRON220 1
 #define SOFARTRAD 2
 

@@ -21,6 +21,9 @@
 
 #include "TerisCommon.h"
 
+#define RS485_BAUDRATE 9600 // Verificare che i dispositivi siano configurati con lo stesso baudrate
+
+
 // Impostazione delle credenziali per l'accesso del device all'Applicazione The things Network (TTN)
 // Verificare i valori con quelli riportati nella console TTN per lo specifico device
 String appEui = "0000000000000000" ;                       

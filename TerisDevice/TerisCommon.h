@@ -13,7 +13,6 @@
 #include <ArduinoRS485.h> 
 #include <ArduinoModbus.h>
 
-#define RS485_BAUDRATE 9600 // Verificare che i dispositivi siano configurati con lo stesso baudrate
 
 // Definizione del tempo di attesa in ms tra un'interrogazione del ModBus e la successiva
 // è necessario per assicurarsi che il dispositivo abbia terminato la risposta prima
