@@ -65,6 +65,7 @@ void EastronSDM220FrequentDataCollection(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo di lettura per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
   u.bitRegister = SDM220readInputRegister_raw(deviceAddr,VOLTAGE);
   if (!errore) {
@@ -189,6 +190,7 @@ void EastronSDM220DailyDataCollection(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo di lettura per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
   u.bitRegister = SDM220readInputRegister_raw(deviceAddr,IMPORT_ACTIVE_ENERGY);
   if (!errore) {

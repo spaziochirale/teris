@@ -74,6 +74,7 @@ void SofarTrad40KwFrequentDataCollection(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
 
   u.bitRegister = SofarTrad40KwReadHoldingRegister(deviceAddr,PV1_VOLTAGE);
@@ -214,6 +215,7 @@ void SofarTrad40KwDailyDataCollection(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
  u32.bitRegister = SofarTrad40KwReadHoldingRegister32(deviceAddr,TOTAL_PRODUCTION_HB); // Specifico l'indirizzo del primo rsgistro a 16 bit
   if (!errore){

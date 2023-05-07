@@ -78,6 +78,7 @@ void EastronSDM630FrequentDataCollection1(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo di lettura per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
   u.bitRegister = SDM630readInputRegister_raw(deviceAddr,PH1_VOLTAGE);
   if (!errore) {
@@ -296,6 +297,7 @@ void EastronSDM630FrequentDataCollection2(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo di lettura per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
   u.bitRegister = SDM630readInputRegister_raw(deviceAddr,FREQUENCY);
   if (!errore) {
@@ -439,6 +441,7 @@ void EastronSDM630DailyDataCollection(int deviceAddr) {
   erroriTot = 0; // Inizia un nuovo ciclo di lettura per cui resetto il numero totale degli errori
 
   modem.beginPacket(); // Preparo il pacchetto di dati
+  modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
   u.bitRegister = SDM630readInputRegister_raw(deviceAddr,IMPORT_ACTIVE_ENERGY);
   if (!errore) {
