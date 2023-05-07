@@ -27,7 +27,7 @@
 // riferimento documento: SDM630 ModBus Protocol 
 
 // Dati da acquisire con frequenza elevata (ogni 15 min.)
-// Primo blocco
+// Primo blocco 36 byte
 #define PH1_VOLTAGE  0x0000
 #define PH2_VOLTAGE  0x0002
 #define PH3_VOLTAGE  0x0004
@@ -37,7 +37,7 @@
 #define PH1_POWER_FACTOR 0x001E
 #define PH2_POWER_FACTOR 0x0020
 #define PH3_POWER_FACTOR 0x0022
-// Secondo blocco
+// Secondo blocco 20 byte
 #define FREQUENCY  0x0046
 #define NEUTRAL_CURRENT 0x00E0
 #define AVERAGE_LINE_TO_NEUTRAL_VOLTS_THD 0x00F8
