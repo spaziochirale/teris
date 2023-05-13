@@ -109,7 +109,7 @@ void loop() {
   if ((((millis()- timeLastDailyCollection)>SIX_HOURS)) or ((millis()- timeLastDailyCollection) <0)) {
     EastronSDM220DailyDataCollection(EASTRON220);
     SofarTrad40KwDailyDataCollection(SOFARTRAD);
-    timeLastFrequentCollection = millis();
+    timeLastDaylyCollection = millis();
   }
 
 
