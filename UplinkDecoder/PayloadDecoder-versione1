@@ -1,0 +1,23 @@
+function decodeUplink(input) {
+  const payload = input.bytes;
+  const asciiString = payload.map(byte => String.fromCharCode(byte)).join("");
+  const data = asciiString.split("|");
+
+  let outputFields = {};
+  
+  outputFields = {
+    voltage1: data[0],
+    current1: data[1],
+    voltage2: data[2],
+    current2: data[3],
+  };
+  
+
+  return {
+    data: {
+      ...outputFields
+    },
+    warnings: [],
+    errors: []
+  };
+}

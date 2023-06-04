@@ -1,0 +1,45 @@
+function Decoder(payload, port) {
+  // Funzione di utilità per convertire byte in float
+  function bytesToFloat(bytes) {
+    var bits = bytes[0]<<24 | bytes[1]<<16 | bytes[2]<<8 | bytes[3];
+    var sign = (bits>>>31 === 0) ? 1.0 : -1.0;
+    var e = bits>>>23 & 0xff;
+    var m = (e === 0) ? (bits & 0x7fffff)<<1 : (bits & 0x7fffff) | 0x800000;
+    var f = sign * m * Math.pow(2, e - 150);
+    return f;
+  }
+
+  var deviceAddress = payload[0];
+
+  if (deviceAddress !== 1 && deviceAddress !== 2) {
+    throw new Error("Unknown deviceAddress");
+  }
+
+  var suffix = deviceAddress.toString();
+
+  if (port === 10) {
+    if (payload.length !== 17) {
+      throw new Error("Expected 17 bytes of payload");
+    } else {
+      return [
+        { field: "voltage" + suffix, value: bytesToFloat(payload.slice(1, 5)) },
+        { field: "current" + suffix, value: bytesToFloat(payload.slice(5, 9)) },
+        { field: "powerFactor" + suffix, value: bytesToFloat(payload.slice(9, 13)) },
+        { field: "frequency" + suffix, value: bytesToFloat(payload.slice(13, 17)) }
+      ];
+    }
+  } else if (port === 11) {
+    if (payload.length !== 17) {
+      throw new Error("Expected 17 bytes of payload");
+    } else {
+      return [
+        { field: "importActiveEnergy" + suffix, value: bytesToFloat(payload.slice(1, 5)) },
+        { field: "exportActiveEnergy" + suffix, value: bytesToFloat(payload.slice(5, 9)) },
+        { field: "importReactiveEnergy" + suffix, value: bytesToFloat(payload.slice(9, 13)) },
+        { field: "exportReactiveEnergy" + suffix, value: bytesToFloat(payload.slice(13, 17)) }
+      ];
+    }
+  } else {
+    throw new Error("Unknown port");
+  }
+}
