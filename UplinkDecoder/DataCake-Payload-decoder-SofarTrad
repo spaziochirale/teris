@@ -1,0 +1,56 @@
+function Decoder(payload, port) {
+  // Funzione di utilità per convertire byte in int
+  function bytesToInt(bytes) {
+    return bytes[0]<<8 | bytes[1];
+  }
+
+  // Funzione di utilità per convertire byte in int32
+  function bytesToInt32(bytes) {
+    return bytes[0]<<24 | bytes[1]<<16 | bytes[2]<<8 | bytes[3];
+  }
+
+  var deviceAddress = payload[0];
+
+  if (deviceAddress !== 1 && deviceAddress !== 2) {
+    throw new Error("Unknown deviceAddress");
+  }
+
+  var suffix = deviceAddress.toString();
+
+  if (port === 30) {
+    if (payload.length !== 11) {
+      throw new Error("Expected 11 bytes of payload");
+    } else {
+      return [
+        { field: "PV1Voltage" + suffix, value: bytesToInt(payload.slice(1, 3)) / 10.0 },
+        { field: "PV1Current" + suffix, value: bytesToInt(payload.slice(3, 5)) / 100.0 },
+        { field: "PV2Voltage" + suffix, value: bytesToInt(payload.slice(5, 7)) / 10.0 },
+        { field: "PV2Current" + suffix, value: bytesToInt(payload.slice(7, 9)) / 100.0 },
+        { field: "activePowerOutput" + suffix, value: bytesToInt(payload.slice(9, 11)) / 100.0 }
+      ];
+    }
+  } else if (port === 31) {
+    if (payload.length !== 9) {
+      throw new Error("Expected 9 bytes of payload");
+    } else {
+      return [
+        { field: "totalProduction" + suffix, value: bytesToInt32(payload.slice(1, 5)) },
+        { field: "dailyEnergy" + suffix, value: bytesToInt(payload.slice(5, 7)) / 100.0 },
+        { field: "PVInsulationResistanceToGround" + suffix, value: bytesToInt(payload.slice(7, 9)) }
+      ];
+    }
+  } else if (port === 32) {
+    if (payload.length !== 9) {
+      throw new Error("Expected 9 bytes of payload");
+    } else {
+      return [
+        { field: "inverterAlarm" + suffix, value: bytesToInt(payload.slice(1, 3)) },
+        { field: "inverterInternalTemperature" + suffix, value: bytesToInt(payload.slice(3, 5)) },
+        { field: "inverterBusVoltage" + suffix, value: bytesToInt(payload.slice(5, 7)) / 10.0 },
+        { field: "GFCIrms" + suffix, value: bytesToInt(payload.slice(7, 9)) }
+      ];
+    }
+  } else {
+    throw new Error("Unknown port");
+  }
+}
