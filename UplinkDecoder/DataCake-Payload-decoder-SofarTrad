@@ -10,11 +10,6 @@ function Decoder(payload, port) {
   }
 
   var deviceAddress = payload[0];
-
-  if (deviceAddress !== 1 && deviceAddress !== 2) {
-    throw new Error("Unknown deviceAddress");
-  }
-
   var suffix = deviceAddress.toString();
 
   if (port === 30) {
