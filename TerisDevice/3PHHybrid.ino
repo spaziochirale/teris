@@ -394,7 +394,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
 }
 
 /*
-                 * ZCSHybridDaylyDataCollection *
+                 * ZCSHybridDailyDataCollection *
 
   Questa funzione effettua la lettura dei registri del dispositivo ZCS Hybrid 3PH
   che devono essere acquisiti con frequenza giornaliera, compone il pacchetto
@@ -406,7 +406,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
    - errore
    - erroriTot
 */
-void ZCSHybridDaylyDataCollection(int deviceAddr) {
+void ZCSHybridDailyDataCollection(int deviceAddr) {
 
   union {
     uint32_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 32 bit

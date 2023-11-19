@@ -64,7 +64,7 @@
    - errore
    - erroriTot
 */
-void ZCSTrifaseLightFrequentDataCollection(int deviceAddr) {
+void ZCSTrifaseDayLightFrequentDataCollection(int deviceAddr) {
   // Struttura dati "union" utilizzata per gestire le interpretazioni dei tipi di dato dai valori raw dei registri
   union {
     uint16_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 16 bit
@@ -324,7 +324,7 @@ void ZCSTrifaseFrequentDataCollection(int deviceAddr) {
 }
 
 /*
-                 * ZCSTrifaseDaylyDataCollection *
+                 * ZCSTrifaseDailyDataCollection *
 
   Questa funzione effettua la lettura dei registri del dispositivo ZCS Trifase standard
   che devono essere acquisiti con frequenza giornaliera, compone il pacchetto
@@ -336,7 +336,7 @@ void ZCSTrifaseFrequentDataCollection(int deviceAddr) {
    - errore
    - erroriTot
 */
-void ZCSTrifaseDaylyDataCollection(int deviceAddr) {
+void ZCSTrifaseDailyDataCollection(int deviceAddr) {
 
   union {
     uint32_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 32 bit
