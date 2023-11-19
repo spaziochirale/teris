@@ -51,6 +51,10 @@
 // Definizione dell'itervallo di attesa prima di ritentare un Join alla rete LoRaWan
 #define JOIN_RETRY_INTERVAL 5000
 
+// Timestamp delle ultime letture di dati
+unsigned long timeLastFrequentCollection, timeLastDailyCollection;
+
+
 // Impostazione delle credenziali per l'accesso del device all'Applicazione The things Network (TTN)
 // Verificare i valori con quelli riportati nella console TTN per lo specifico device
 String appEui = "0000000000000000" ;                       
