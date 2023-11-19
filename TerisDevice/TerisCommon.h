@@ -14,11 +14,15 @@
 #include <ArduinoModbus.h>
 
 
+// Definizione del tempo di attesa in ms tra un'interrogazione del ModBus e la successiva
+// è necessario per assicurarsi che il dispositivo abbia terminato la risposta prima
+// di inviare una nuova interrogazione. Il parametro può essere sottoposto a tuning testando
+// il comportamento del bus e dei device. Se riducendo il tempo le letture iniziano ad
+// andare in timeout, il valore deve essere incrementato
+#define MODBUS_DELAY 3000
+
 
 LoRaModem modem; // Dichiarazione dell'oggetto per la gestione della trasmissione con protocollo LoRa
-
-// Timestamp delle ultime letture di dati
-unsigned long timeLastFrequentCollection, timeLastDailyCollection;
 
 int errore =0; // flag usato per segnalare che è avvenuto un errore nella lettura ModBus
 int erroriTot; // contatore degli errori totali riscontrati durante un ciclo della funzione loop

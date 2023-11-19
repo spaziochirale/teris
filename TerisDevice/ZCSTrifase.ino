@@ -3,7 +3,9 @@
 
   Author: Chirale S.r.l.
   
-  Funzioni di lettura e trasmissione dati per Inverter ZCS 3PH Hybrid
+  Funzioni di lettura e trasmissione dati per Inverter ZCS trifase Standard
+  Utilizza lo stesso protocollo e mappatura registri dell'inverter ibrido
+  ovviamente senza i registri riferiti alla batteria
   
   Testato su scheda Arduino MKR WAN 1310 con Shield 485 MKR
   
@@ -27,10 +29,6 @@
 #define HY_PV1_CURRENT 0x0585 // uint16_t
 #define HY_PV2_VOLTAGE 0x0587 // uint16_t
 #define HY_PV2_CURRENT 0x0588 // uint16_t
-#define HY_BAT1_VOLTAGE 0x0604 // uint16_t
-#define HY_BAT1_CURRENT 0x0605 // int16_t
-#define HY_BAT1_ENV_TEMPERATURE 0x0607 // int16_t
-#define HY_BAT1_SOC 0x0608 // uint16_t
 #define HY_ACTIVE_POWER_OUTPUT_TOTAL 0x0485 // int16_t
 #define HY_REACTIVE_POWER_OUTPUT_TOTAL 0x0486 // int16_t
 #define HY_ACTIVE_POWER_PCC_TOTAL 0x0488 // int16_t
@@ -51,18 +49,14 @@
 #define HY_ENERGY_PURCHASE_TOTAL 0x068E
 #define HY_ENERGY_SELLING_TODAY 0x0690 
 #define HY_ENERGY_SELLING_TOTAL 0x0692
-#define HY_BAT_CHARGE_TODAY 0x0694 
-#define HY_BAT_CHARGE_TOTAL 0x0696   
-#define HY_BAT_DISCHARGE_TODAY 0x0698 
-#define HY_BAT_DISCHARGE_TOTAL 0x069A
 
 
 /*
-                 * ZCSHybridDayLightFrequentDataCollection *
+                 * ZCSTrifaseDayLightFrequentDataCollection *
 
-  Questa funzione effettua la lettura dei registri del dispositivo ZCS Hybrid 3PH
+  Questa funzione effettua la lettura dei registri del dispositivo ZCS Trifase standard
   che devono essere acquisiti con frequenza elevata nelle ore diurne, compone il pacchetto
-  di dati di tipo 40 (v. protocollo applicativo TERIS), imposta fport a 40
+  di dati di tipo 50 (v. protocollo applicativo TERIS), imposta fport a 50
   e trasmette il pacchetto sulla rete LoRa
 
   Vengono utilizzate le seguenti variabili globali:
@@ -70,7 +64,7 @@
    - errore
    - erroriTot
 */
-void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
+void ZCSTrifaseLightFrequentDataCollection(int deviceAddr) {
   // Struttura dati "union" utilizzata per gestire le interpretazioni dei tipi di dato dai valori raw dei registri
   union {
     uint16_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 16 bit
@@ -79,7 +73,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   } u;
 
 
-  Serial.print("ZCS 3PH Hybrid lettura e invio dati frequenti (diurni) dell'inverter ModBus Addr: "); 
+  Serial.print("ZCS Trifase lettura e invio dati frequenti (diurni) dell'inverter ModBus Addr: "); 
   Serial.println(deviceAddr);
 
   erroriTot = 0; // Inizia un nuovo ciclo per cui resetto il numero totale degli errori
@@ -88,7 +82,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_PV1_VOLTAGE);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_PV1_VOLTAGE);
   if (!errore){
     // Se la funzione di lettura ModBus non ha settato il flag errore
     // posso procedere a visualizzare sull'eventuale serial monitor i valori 
@@ -113,7 +107,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   delay(MODBUS_DELAY);
   
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_PV1_CURRENT);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_PV1_CURRENT);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -129,7 +123,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_PV2_VOLTAGE);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_PV2_VOLTAGE);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -145,7 +139,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_PV2_CURRENT);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_PV2_CURRENT);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -161,71 +155,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_BAT1_VOLTAGE);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" bat1_voltage register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Volt =  ");
-    Serial.println(u.bitRegister*0.1); // il valore del registro è in unità da 0,1 Volt
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    Serial.println("Lettura bat1_voltage non riuscita");
-  }
-  delay(MODBUS_DELAY);
-
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_BAT1_CURRENT);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" bat1_current register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Ampere =  ");
-    Serial.println(u.int16*0.01); // il valore del registro è in unità da 0,01 Ampere (il tipo è int16_t)
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    Serial.println("Lettura bat1_current non riuscita");
-  }
-  delay(MODBUS_DELAY);
-
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_BAT1_ENV_TEMPERATURE);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" bat1_env_temperature register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Temp. Gradi centigradi =  ");
-    Serial.println(u.int16); // il valore del registro è in unità da 1 grado C
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    Serial.println("Lettura bat1_env_temperature non riuscita");
-  }
-  delay(MODBUS_DELAY);
-
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_BAT1_SOC);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" bat1_soc register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" SOC % =  ");
-    Serial.println(u.bitRegister); // il valore del registro è in unità percentuali
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    Serial.println("Lettura bat1_soc non riuscita");
-  }
-  delay(MODBUS_DELAY);
-
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_OUTPUT_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_OUTPUT_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -241,7 +171,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_REACTIVE_POWER_OUTPUT_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_REACTIVE_POWER_OUTPUT_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -257,7 +187,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_PCC_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_PCC_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -279,7 +209,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
 
   if (!erroriTot) {
     Serial.println("Trasmetto messaggio su rete LoRaWan");
-    modem.setPort(40); // Imposto fprort a 40 per identificare il tipo pacchetto
+    modem.setPort(50); // Imposto fprort a 40 per identificare il tipo pacchetto
     if(modem.endPacket()){
       Serial.println("Messaggio LoRa inviato!");
     } 
@@ -291,11 +221,11 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
 }
 
 /*
-                 * ZCSHybridFrequentDataCollection *
+                 * ZCSTrifaseFrequentDataCollection *
 
-  Questa funzione effettua la lettura dei registri del dispositivo ZCS Hybrid 3PH
+  Questa funzione effettua la lettura dei registri del dispositivo ZCS Trifase standard
   che devono essere acquisiti con frequenza elevata nelle ore diurne e notturne, compone il pacchetto
-  di dati di tipo 41 (v. protocollo applicativo TERIS), imposta fport a 41
+  di dati di tipo 51 (v. protocollo applicativo TERIS), imposta fport a 51
   e trasmette il pacchetto sulla rete LoRa
 
   Vengono utilizzate le seguenti variabili globali:
@@ -303,7 +233,7 @@ void ZCSHybridDayLightFrequentDataCollection(int deviceAddr) {
    - errore
    - erroriTot
 */
-void ZCSHybridFrequentDataCollection(int deviceAddr) {
+void ZCSTrifaseFrequentDataCollection(int deviceAddr) {
 
   union {
     uint16_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 16 bit
@@ -311,7 +241,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
     byte buf[2]; // Rappresentazione della stessa variabile come array di 2 byte utile per preparare il pacchetto dati LoRa
   } u;
 
-  Serial.print("ZCS 3PH Hybrid lettura e invio dati frequenti dell'inverter ModBus Addr: "); 
+  Serial.print("ZCS Trifase lettura e invio dati frequenti dell'inverter ModBus Addr: "); 
   Serial.println(deviceAddr);
 
   erroriTot = 0; // Inizia un nuovo ciclo per cui resetto il numero totale degli errori
@@ -320,7 +250,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
   modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_FREQUENCY_GRID);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_FREQUENCY_GRID);
   if (!errore){
     // Se la funzione di lettura ModBus non ha settato il flag errore
     // posso procedere a visualizzare sull'eventuale serial monitor i valori 
@@ -345,7 +275,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
   delay(MODBUS_DELAY);
   
 
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_LOAD_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_ACTIVE_POWER_LOAD_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -360,7 +290,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
     Serial.println("Lettura active_power_load_total non riuscita");
   }
   delay(MODBUS_DELAY);
-  u.bitRegister = ZCSHybridReadHoldingRegister(deviceAddr,HY_REACTIVE_POWER_LOAD_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister(deviceAddr,HY_REACTIVE_POWER_LOAD_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -382,7 +312,7 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
 
   if (!erroriTot) {
     Serial.println("Trasmetto messaggio su rete LoRaWan");
-    modem.setPort(41); // Imposto fprort a 41 per identificare il tipo pacchetto
+    modem.setPort(51); // Imposto fprort a 41 per identificare il tipo pacchetto
     if(modem.endPacket()){
       Serial.println("Messaggio LoRa inviato!");
     } 
@@ -394,11 +324,11 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
 }
 
 /*
-                 * ZCSHybridDaylyDataCollection *
+                 * ZCSTrifaseDaylyDataCollection *
 
-  Questa funzione effettua la lettura dei registri del dispositivo ZCS Hybrid 3PH
+  Questa funzione effettua la lettura dei registri del dispositivo ZCS Trifase standard
   che devono essere acquisiti con frequenza giornaliera, compone il pacchetto
-  di dati di tipo 42 (v. protocollo applicativo TERIS), imposta fport a 42
+  di dati di tipo 52 (v. protocollo applicativo TERIS), imposta fport a 52
   e trasmette il pacchetto sulla rete LoRa
 
   Vengono utilizzate le seguenti variabili globali:
@@ -406,14 +336,14 @@ void ZCSHybridFrequentDataCollection(int deviceAddr) {
    - errore
    - erroriTot
 */
-void ZCSHybridDaylyDataCollection(int deviceAddr) {
+void ZCSTrifaseDaylyDataCollection(int deviceAddr) {
 
   union {
     uint32_t bitRegister; // Variabile di appoggio per ricevere la lettura di un registro del dispositivo a 32 bit
     byte buf[4]; // Rappresentazione della stessa variabile come array di 4 byte utile per preparare il pacchetto dati LoRa
   } u;
 
-  Serial.print("ZCS 3PH Hybrid lettura e invio dati giornalieri dell'inverter ModBus Addr: "); 
+  Serial.print("ZCS Trifase lettura e invio dati giornalieri dell'inverter ModBus Addr: "); 
   Serial.println(deviceAddr);
 
   erroriTot = 0; // Inizia un nuovo ciclo per cui resetto il numero totale degli errori
@@ -422,7 +352,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   modem.write((uint8_t)deviceAddr); // Valorizzo il primo byte del pacchetto con l'id del dispositivo
 
 
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_PV_GENERATION_TODAY);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_PV_GENERATION_TODAY);
   if (!errore){
     // Se la funzione di lettura ModBus non ha settato il flag errore
     // posso procedere a visualizzare sull'eventuale serial monitor i valori 
@@ -448,7 +378,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_PV_GENERATION_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_PV_GENERATION_TOTAL);
   if (!errore){
     // Se la funzione di lettura ModBus non ha settato il flag errore
     // posso procedere a visualizzare sull'eventuale serial monitor i valori 
@@ -474,7 +404,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
 
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_LOAD_CONSUMPTION_TODAY);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_LOAD_CONSUMPTION_TODAY);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -494,7 +424,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_LOAD_CONSUMPTION_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_LOAD_CONSUMPTION_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -514,7 +444,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_ENERGY_PURCHASE_TODAY);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_ENERGY_PURCHASE_TODAY);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -534,7 +464,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_ENERGY_PURCHASE_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_ENERGY_PURCHASE_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -554,7 +484,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_ENERGY_SELLING_TODAY);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_ENERGY_SELLING_TODAY);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -574,7 +504,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_ENERGY_SELLING_TOTAL);
+  u.bitRegister = ZCSTrifaseReadHoldingRegister32(deviceAddr,HY_ENERGY_SELLING_TOTAL);
   if (!errore){
     Serial.print("Device ");
     Serial.print(deviceAddr);
@@ -594,86 +524,6 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
   }
   delay(MODBUS_DELAY);
   
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_BAT_CHARGE_TODAY);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" HY_BAT_CHARGE_TODAY register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Kwh =  ");
-    Serial.println(u.bitRegister*0.01); // il valore del registro è in unità da 0,01 Kwh
-    delay(MODBUS_DELAY); // è bene lasciare un tempo di attesa di qualche secondo prima di fare una nuova interrogazione al bus
-    modem.write(u.buf[3]); 
-    modem.write(u.buf[2]);
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    // inutile visualizzare e inviare i dati se la lettura non è riuscita
-    Serial.println("Lettura HY_BAT_CHARGE_TODAY non riuscita");
-  }
-  delay(MODBUS_DELAY);
-  
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_BAT_CHARGE_TOTAL);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" HY_BAT_CHARGE_TOTAL register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Kwh =  ");
-    Serial.println(u.bitRegister*0.1); // il valore del registro è in unità da 0,1 Kwh
-    delay(MODBUS_DELAY); // è bene lasciare un tempo di attesa di qualche secondo prima di fare una nuova interrogazione al bus
-    modem.write(u.buf[3]); 
-    modem.write(u.buf[2]);
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    // inutile visualizzare e inviare i dati se la lettura non è riuscita
-    Serial.println("Lettura HY_BAT_CHARGE_TOTAL non riuscita");
-  }
-  delay(MODBUS_DELAY);
-  
-
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_BAT_DISCHARGE_TODAY);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" HY_BAT_DISCHARGE_TODAY register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Kwh =  ");
-    Serial.println(u.bitRegister*0.01); // il valore del registro è in unità da 0,01 Kwh
-    delay(MODBUS_DELAY); // è bene lasciare un tempo di attesa di qualche secondo prima di fare una nuova interrogazione al bus
-    modem.write(u.buf[3]); 
-    modem.write(u.buf[2]);
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    // inutile visualizzare e inviare i dati se la lettura non è riuscita
-    Serial.println("Lettura HY_BAT_DISCHARGE_TODAY non riuscita");
-  }
-  delay(MODBUS_DELAY);
-  
-  u.bitRegister = ZCSHybridReadHoldingRegister32(deviceAddr,HY_BAT_DISCHARGE_TOTAL);
-  if (!errore){
-    Serial.print("Device ");
-    Serial.print(deviceAddr);
-    Serial.print(" HY_BAT_DISCHARGE_TOTAL register = ");
-    Serial.print(u.bitRegister,HEX);
-    Serial.print(" Kwh =  ");
-    Serial.println(u.bitRegister*0.1); // il valore del registro è in unità da 0,1 Kwh
-    delay(MODBUS_DELAY); // è bene lasciare un tempo di attesa di qualche secondo prima di fare una nuova interrogazione al bus
-    modem.write(u.buf[3]); 
-    modem.write(u.buf[2]);
-    modem.write(u.buf[1]); 
-    modem.write(u.buf[0]);
-  }
-  else {
-    // inutile visualizzare e inviare i dati se la lettura non è riuscita
-    Serial.println("Lettura HY_BAT_DISCHARGE_TOTAL non riuscita");
-  }
-  delay(MODBUS_DELAY);
   
   Serial.print("Terminata la lettura dei registri. In totale ci sono stati ");
   Serial.print(erroriTot);
@@ -681,7 +531,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
 
   if (!erroriTot) {
     Serial.println("Trasmetto messaggio su rete LoRaWan");
-    modem.setPort(42); // Imposto fprort a 42 per identificare il tipo pacchetto
+    modem.setPort(52); // Imposto fprort a 52 per identificare il tipo pacchetto
     if(modem.endPacket()){
       Serial.println("Messaggio LoRa inviato!");
     } 
@@ -694,7 +544,7 @@ void ZCSHybridDaylyDataCollection(int deviceAddr) {
 
 
 // Lettura registro singolo da 16 bit
-uint16_t ZCSHybridReadHoldingRegister(int id,int address){
+uint16_t ZCSTrifaseReadHoldingRegister(int id,int address){
   
   if (!ModbusRTUClient.requestFrom(id, HOLDING_REGISTERS, address, 1)) { 
     // in caso di errore imposto il flag errore a 1 e incremento il conteggio relativo al ciclo
@@ -713,7 +563,7 @@ uint16_t ZCSHybridReadHoldingRegister(int id,int address){
 }
 
 // Lettura registro doppio da 32 bit
-uint32_t ZCSHybridReadHoldingRegister32(int id,int address){
+uint32_t ZCSTrifaseReadHoldingRegister32(int id,int address){
   
   if (!ModbusRTUClient.requestFrom(id, HOLDING_REGISTERS, address, 2)) { 
     // in caso di errore imposto il flag errore a 1 e incremento il conteggio relativo al ciclo

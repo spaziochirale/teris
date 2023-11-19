@@ -165,7 +165,7 @@ void EastronSDM220FrequentDataCollection(int deviceAddr) {
 }
 
 /*
-                 * EastronSDM220DailyDataCollection *
+                 * sa *
                  
   Questa funzione effettua la lettura dei registri del dispositivo SDM220
   che devono essere acquisiti con frequenza giornaliera, compone il pacchetto
