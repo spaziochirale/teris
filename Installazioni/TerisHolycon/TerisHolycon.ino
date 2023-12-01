@@ -96,7 +96,7 @@ void dailyDataCollection() {
 */
 SofarTrad40KwDailyDataCollection(INVERTER_TRAD1);
 SofarTrad40KwDailyDataCollection(INVERTER_TRAD2);
-ZCSTrifaseDailyDataCollection(INVERTER_TRAD1);
+ZCSTrifaseDailyDataCollection(INVERTER_ZCS);
 timeLastDailyCollection = millis();
 }
 
